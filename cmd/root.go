@@ -16,8 +16,7 @@ var (
 	rootCmd         = &cobra.Command{
 		Use:   "pictar",
 		Short: "An image processing CLI.",
-		Long: `Pictar is an image processing tool built with
-									cobra and imaging.`,
+		Long:  `Pictar is an image processing tool made by Golang. It is designed to be used as both an API and a CLI. 📽`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Do Stuff Here
 			fmt.Println("hello, pictar")
