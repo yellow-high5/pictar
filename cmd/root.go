@@ -8,11 +8,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Config struct {
+	Application string
+	Debug       bool
+}
+
 var (
-	cfgFile         string
+	configFile      string
+	config          Config
 	resampleFilter  string
 	outputExtension string
-	saveImagePath   string
 	rootCmd         = &cobra.Command{
 		Use:   "pictar",
 		Short: "An image processing CLI.",
@@ -25,10 +30,11 @@ var (
 )
 
 func init() {
-	// cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
-	viper.SetDefault("license", "apache")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "config.yaml", "config file (default is $HOME/.cobra.yaml)")
+	rootCmd.PersistentFlags().StringVar(&resampleFilter, "filter", "Gaussian", "specifies a resampling filter to be used for image resizing.")
+	rootCmd.PersistentFlags().StringVar(&outputExtension, "ext", "png", "specifies the extension of the output file")
 }
 
 func Execute() {
@@ -36,4 +42,26 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func initConfig() {
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else {
+			fmt.Println("Using config file:", viper.ConfigFileUsed())
+		}
+
+		if err := viper.Unmarshal(&config); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+	}
+
+	viper.AutomaticEnv()
+
 }

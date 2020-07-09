@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/disintegration/imaging"
@@ -25,7 +26,7 @@ var transverseCmd = &cobra.Command{
 
 		dst := imaging.Transverse(src)
 
-		err = imaging.Save(dst, "./result.png")
+		err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("ext").Value))
 		if err != nil {
 			log.Fatalf("Failed to save image: %v", err)
 		}
