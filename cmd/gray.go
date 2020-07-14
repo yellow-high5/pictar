@@ -8,28 +8,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(grayCmd)
+type grayCmd struct {
+	*baseBuilderCmd
 }
 
-var grayCmd = &cobra.Command{
-	Use:   "gray",
-	Short: "Generate gray scale version.",
-	Long:  "https://godoc.org/github.com/disintegration/imaging#Grayscale",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		filePath := args[0]
-		src, err := imaging.Open(filePath)
-		if err != nil {
-			log.Fatalf("No such file path: %v", filePath)
-		}
+func (b *commandsBuilder) newGrayCmd() *grayCmd {
+	cc := &grayCmd{}
 
-		dst := imaging.Grayscale(src)
+	cmd := &cobra.Command{
+		Use:   "gray",
+		Short: "Generate gray scale version.",
+		Long:  "https://godoc.org/github.com/disintegration/imaging#Grayscale",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			filePath := args[0]
 
-		err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("ext").Value))
-		if err != nil {
-			log.Fatalf("Failed to save image: %v", err)
-		}
+			src, err := imaging.Open(filePath)
+			if err != nil {
+				log.Fatalf("No such file path: %v", filePath)
+				return err
+			}
 
-	},
+			dst := imaging.Grayscale(src)
+
+			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
+			if err != nil {
+				log.Fatalf("Failed to save image: %v", err)
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cc.baseBuilderCmd = b.newBaseBuilderCmd(cmd)
+
+	return cc
 }

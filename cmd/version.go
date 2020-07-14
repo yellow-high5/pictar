@@ -6,15 +6,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
+type versionCmd struct {
+	*baseBuilderCmd
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of pictar",
-	Long:  `All software has versions. This is pictar's`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("pictar version pictar1.0.0")
-	},
+func (b *commandsBuilder) newVersionCmd() *versionCmd {
+	cc := &versionCmd{}
+
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of pictar",
+		Long:  `All software has versions. This is pictar's`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("pictar version pictar1.0.0")
+			return nil
+		},
+	}
+
+	cc.baseBuilderCmd = b.newBaseBuilderCmd(cmd)
+
+	return cc
 }

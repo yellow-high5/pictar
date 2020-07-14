@@ -18,6 +18,12 @@ go install github.com/yellow-high5/pictar
 
 ## CLI
 
+| command                       | after processing                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `pictar adjust`               | ![](https://github.com/disintegration/imaging/raw/master/testdata/flowers_small.png) |
+| `pictar gray /path/to/file`   | ![](https://github.com/disintegration/imaging/raw/master/testdata/flowers_small.png) |
+| `pictar invert /path/to/file` | ![](https://github.com/disintegration/imaging/raw/master/testdata/flowers_small.png) |
+
 ## API
 
 ```sh

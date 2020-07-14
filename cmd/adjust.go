@@ -8,67 +8,76 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
+type adjustCmd struct {
 	saturation float64
 	contrast   float64
 	brightness float64
 	gamma      float64
 	sigmoid    float64
-	adjustCmd  = &cobra.Command{
+
+	*baseBuilderCmd
+}
+
+func (b *commandsBuilder) newAdjustCmd() *adjustCmd {
+	cc := &adjustCmd{}
+
+	cmd := &cobra.Command{
 		Use:   "adjust",
 		Short: "Adjust saturation, contrast, brightness, gamma, sigmoid, LUT",
 		Long:  "https://godoc.org/github.com/disintegration/imaging",
 		Args:  cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
+
 			src, err := imaging.Open(filePath)
 			if err != nil {
 				log.Fatalf("No such file path: %v", filePath)
 			}
 
 			// -100 =< saturation =< 100
-			if saturation != 0 {
-				src = imaging.AdjustSaturation(src, saturation)
+			if cc.saturation != 0 {
+				src = imaging.AdjustSaturation(src, cc.saturation)
 			}
 
 			// -100 =< contrast =< 100
-			if contrast != 0 {
-				src = imaging.AdjustContrast(src, contrast)
+			if cc.contrast != 0 {
+				src = imaging.AdjustContrast(src, cc.contrast)
 			}
 
 			// -100 =< brightness =< 100
-			if brightness != 0 {
-				src = imaging.AdjustBrightness(src, brightness)
+			if cc.brightness != 0 {
+				src = imaging.AdjustBrightness(src, cc.brightness)
 			}
 
 			// gammma > 0
-			if gamma != 1.0 {
-				src = imaging.AdjustGamma(src, gamma)
+			if cc.gamma != 1.0 {
+				src = imaging.AdjustGamma(src, cc.gamma)
 			}
 
 			// 0~1, -10 =< sigmoid =< 10
-			if sigmoid != 0 {
-				src = imaging.AdjustSigmoid(src, 0.5, sigmoid)
+			if cc.sigmoid != 0 {
+				src = imaging.AdjustSigmoid(src, 0.5, cc.sigmoid)
 			}
 
 			dst := src
 
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("ext").Value))
+			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
 			if err != nil {
 				log.Fatalf("Failed to save image: %v", err)
 			}
 
+			return nil
+
 		},
 	}
-)
 
-func init() {
+	cmd.Flags().Float64Var(&cc.saturation, "saturation", 0, "The depth or intensity of color within an image")
+	cmd.Flags().Float64Var(&cc.contrast, "contrast", 0, "The difference in luminance or colour that makes an object")
+	cmd.Flags().Float64Var(&cc.brightness, "brightness", 0, "The overall lightness or darkness of the image")
+	cmd.Flags().Float64Var(&cc.gamma, "gamma", 1.0, "The value indicating the response characteristics of image gradation")
+	cmd.Flags().Float64Var(&cc.sigmoid, "sigmoid", 0, "The value that determines contrast enhancement")
 
-	adjustCmd.Flags().Float64VarP(&saturation, "saturation", "a", 0, "The depth or intensity of color within an image")
-	adjustCmd.Flags().Float64VarP(&contrast, "contrast", "c", 0, "The difference in luminance or colour that makes an object")
-	adjustCmd.Flags().Float64VarP(&brightness, "brightness", "b", 0, "The overall lightness or darkness of the image")
-	adjustCmd.Flags().Float64VarP(&gamma, "gamma", "g", 1.0, "The value indicating the response characteristics of image gradation")
-	adjustCmd.Flags().Float64VarP(&sigmoid, "sigmoid", "s", 0, "The value that determines contrast enhancement")
+	cc.baseBuilderCmd = b.newBaseBuilderCmd(cmd)
 
-	rootCmd.AddCommand(adjustCmd)
+	return cc
 }
