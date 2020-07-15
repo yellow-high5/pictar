@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -20,27 +19,26 @@ func (b *commandsBuilder) newFitCmd() *fitCmd {
 		Use:   "fit",
 		Short: "Fit the specified maximum width and height and returns the transform",
 		Long:  "https://godoc.org/github.com/disintegration/imaging#Fit",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			width, _ := strconv.Atoi(args[0])
 			height, _ := strconv.Atoi(args[1])
-			filePath := args[2]
+			filePath := args[2:]
 
-			src, err := imaging.Open(filePath)
-			if err != nil {
-				log.Fatalf("No such file path: %v", filePath)
+			processing := func(filePath string) error {
+				src, err := imaging.Open(filePath)
+				if err != nil {
+					log.Fatalf("No such file path: %v", filePath)
+				}
+
+				// TODO: width and height should be alternative
+				dst := imaging.Thumbnail(src, width, height, getFilter(cmd.Flags().Lookup("filter").Value.String()))
+
+				return saveFile(filePath, dst, cmd)
 			}
 
-			// TODO: width and height should be alternative
-			dst := imaging.Fit(src, width, height, imaging.Gaussian)
+			return saveMultiFile(processing, filePath)
 
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
-			if err != nil {
-				log.Fatalf("Failed to save image: %v", err)
-				return err
-			}
-
-			return nil
 		},
 	}
 

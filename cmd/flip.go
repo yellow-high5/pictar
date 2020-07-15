@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/disintegration/imaging"
@@ -19,34 +18,32 @@ func (b *commandsBuilder) newFlipCmd() *flipCmd {
 		Use:   "flip",
 		Short: "Flips the image.",
 		Long:  "https://godoc.org/github.com/disintegration/imaging#FlipH or https://godoc.org/github.com/disintegration/imaging#FlipV",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			direction := args[0]
-			filePath := args[1]
+			filePath := args[1:]
 
-			src, err := imaging.Open(filePath)
-			if err != nil {
-				log.Fatalf("No such file path: %v", filePath)
-				return err
+			processing := func(filePath string) error {
+				src, err := imaging.Open(filePath)
+				if err != nil {
+					log.Fatalf("No such file path: %v", filePath)
+					return err
+				}
+
+				if direction == "horizon" {
+					src = imaging.FlipH(src)
+				}
+
+				if direction == "vertical" {
+					src = imaging.FlipV(src)
+				}
+
+				dst := src
+
+				return saveFile(filePath, dst, cmd)
 			}
 
-			if direction == "horizon" {
-				src = imaging.FlipH(src)
-			}
-
-			if direction == "vertical" {
-				src = imaging.FlipV(src)
-			}
-
-			dst := src
-
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
-			if err != nil {
-				log.Fatalf("Failed to save image: %v", err)
-				return err
-			}
-
-			return nil
+			return saveMultiFile(processing, filePath)
 
 		},
 	}

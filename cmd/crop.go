@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -20,7 +19,7 @@ func (b *commandsBuilder) newCropCmd() *cropCmd {
 		Use:   "crop",
 		Short: "Cuts out a rectangular region.",
 		Long:  "https://godoc.org/github.com/disintegration/imaging#Crop",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			width, _ := strconv.Atoi(args[0])
 			height, _ := strconv.Atoi(args[1])
@@ -34,13 +33,7 @@ func (b *commandsBuilder) newCropCmd() *cropCmd {
 
 			dst := imaging.CropCenter(src, width, height)
 
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
-			if err != nil {
-				log.Fatalf("Failed to save image: %v", err)
-				return err
-			}
-
-			return nil
+			return saveFile(filePath, dst, cmd)
 
 		},
 	}

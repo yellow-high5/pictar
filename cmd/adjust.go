@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/disintegration/imaging"
@@ -27,46 +26,45 @@ func (b *commandsBuilder) newAdjustCmd() *adjustCmd {
 		Long:  "https://godoc.org/github.com/disintegration/imaging",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := args[0]
+			filePath := args[0:]
 
-			src, err := imaging.Open(filePath)
-			if err != nil {
-				log.Fatalf("No such file path: %v", filePath)
+			processing := func(filePath string) error {
+				src, err := imaging.Open(filePath)
+				if err != nil {
+					log.Fatalf("No such file path: %v", filePath)
+				}
+
+				// -100 =< saturation =< 100
+				if cc.saturation != 0 {
+					src = imaging.AdjustSaturation(src, cc.saturation)
+				}
+
+				// -100 =< contrast =< 100
+				if cc.contrast != 0 {
+					src = imaging.AdjustContrast(src, cc.contrast)
+				}
+
+				// -100 =< brightness =< 100
+				if cc.brightness != 0 {
+					src = imaging.AdjustBrightness(src, cc.brightness)
+				}
+
+				// gammma > 0
+				if cc.gamma != 1.0 {
+					src = imaging.AdjustGamma(src, cc.gamma)
+				}
+
+				// 0~1, -10 =< sigmoid =< 10
+				if cc.sigmoid != 0 {
+					src = imaging.AdjustSigmoid(src, 0.5, cc.sigmoid)
+				}
+
+				dst := src
+
+				return saveFile(filePath, dst, cmd)
 			}
 
-			// -100 =< saturation =< 100
-			if cc.saturation != 0 {
-				src = imaging.AdjustSaturation(src, cc.saturation)
-			}
-
-			// -100 =< contrast =< 100
-			if cc.contrast != 0 {
-				src = imaging.AdjustContrast(src, cc.contrast)
-			}
-
-			// -100 =< brightness =< 100
-			if cc.brightness != 0 {
-				src = imaging.AdjustBrightness(src, cc.brightness)
-			}
-
-			// gammma > 0
-			if cc.gamma != 1.0 {
-				src = imaging.AdjustGamma(src, cc.gamma)
-			}
-
-			// 0~1, -10 =< sigmoid =< 10
-			if cc.sigmoid != 0 {
-				src = imaging.AdjustSigmoid(src, 0.5, cc.sigmoid)
-			}
-
-			dst := src
-
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
-			if err != nil {
-				log.Fatalf("Failed to save image: %v", err)
-			}
-
-			return nil
+			return saveMultiFile(processing, filePath)
 
 		},
 	}

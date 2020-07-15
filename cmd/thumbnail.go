@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -20,28 +19,25 @@ func (b *commandsBuilder) newThumbnailCmd() *thumbnailCmd {
 		Use:   "thumbnail",
 		Short: "Scales the image up or down",
 		Long:  "https://godoc.org/github.com/disintegration/imaging#Thumbnail",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			width, _ := strconv.Atoi(args[0])
 			height, _ := strconv.Atoi(args[1])
-			filePath := args[2]
+			filePath := args[2:]
 
-			src, err := imaging.Open(filePath)
-			if err != nil {
-				log.Fatalf("No such file path: %v", filePath)
-				return err
+			processing := func(filePath string) error {
+				src, err := imaging.Open(filePath)
+				if err != nil {
+					log.Fatalf("No such file path: %v", filePath)
+					return err
+				}
+
+				dst := imaging.Thumbnail(src, width, height, getFilter(cmd.Flags().Lookup("filter").Value.String()))
+
+				return saveFile(filePath, dst, cmd)
 			}
 
-			dst := imaging.Thumbnail(src, width, height, imaging.Gaussian)
-
-			err = imaging.Save(dst, fmt.Sprintf("./result.%s", cmd.Flags().Lookup("extention").Value))
-			if err != nil {
-				log.Fatalf("Failed to save image: %v", err)
-				return err
-			}
-
-			return nil
-
+			return saveMultiFile(processing, filePath)
 		},
 	}
 
