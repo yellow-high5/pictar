@@ -9,8 +9,6 @@ type cmder interface {
 }
 
 type commandsBuilder struct {
-	configHandler
-
 	commands []cmder
 }
 
@@ -75,19 +73,4 @@ func (b *baseBuilderCmd) getCommand() *cobra.Command {
 
 func (b *baseBuilderCmd) getCommandsBuilder() *commandsBuilder {
 	return b.builder
-}
-
-type configHandler struct {
-	extension string
-
-	savePath string
-
-	configFile string
-	configDir  string
-	logFile    string
-}
-
-func (c *configHandler) handleFlags(cmd *cobra.Command) {
-	cmd.Flags().String("extension", "png", "extension for ouput file")
-	cmd.Flags().String("savePath", "./", "")
 }

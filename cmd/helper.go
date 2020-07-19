@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"image"
+	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
@@ -45,7 +47,11 @@ func getFilter(filter string) imaging.ResampleFilter {
 }
 
 func saveFile(origin string, dst image.Image, cmd *cobra.Command) error {
-	err := imaging.Save(dst, fmt.Sprintf("./%s.%s", getFileNameWithoutExt(origin), cmd.Flags().Lookup("extention").Value))
+
+	savePath := cmd.Flags().Lookup("save").Value
+	extention := cmd.Flags().Lookup("extention").Value
+
+	err := imaging.Save(dst, fmt.Sprintf("%s/%s.%s", savePath, getFileNameWithoutExt(origin), extention))
 
 	if err != nil {
 		log.Fatalf("Failed to save image: %v", err)
@@ -56,6 +62,7 @@ func saveFile(origin string, dst image.Image, cmd *cobra.Command) error {
 }
 
 func saveMultiFile(fn func(filePath string) error, multiFilePath []string) error {
+	//TODO: need to change multi thread processing
 	for _, s := range multiFilePath {
 		fn(s)
 	}
@@ -64,4 +71,33 @@ func saveMultiFile(fn func(filePath string) error, multiFilePath []string) error
 
 func getFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+func dirwalk(dir string) []string {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	var paths []string
+	for _, file := range files {
+		if file.IsDir() {
+			paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
+			continue
+		}
+		if contains([]string{".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".tif"}, strings.ToLower(filepath.Ext(file.Name()))) {
+			paths = append(paths, filepath.Join(dir, file.Name()))
+		}
+	}
+
+	return paths
+}
+
+func contains(array []string, e string) bool {
+	for _, v := range array {
+		if e == v {
+			return true
+		}
+	}
+	return false
 }

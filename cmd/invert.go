@@ -20,7 +20,13 @@ func (b *commandsBuilder) newInvertCmd() *invertCmd {
 		Long:  "https://godoc.org/github.com/disintegration/imaging#Invert",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := args[0:]
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[0])
+			} else {
+				filePath = args[0:]
+			}
 
 			processing := func(filePath string) error {
 				src, err := imaging.Open(filePath)

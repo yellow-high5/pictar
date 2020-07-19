@@ -23,7 +23,14 @@ func (b *commandsBuilder) newRotateCmd() *rotateCmd {
 		Args:  cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			angle, _ := strconv.ParseFloat(args[0], 64)
-			filePath := args[1:]
+
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[1])
+			} else {
+				filePath = args[1:]
+			}
 
 			processing := func(filePath string) error {
 				src, err := imaging.Open(filePath)

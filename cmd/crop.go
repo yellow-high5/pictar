@@ -23,17 +23,28 @@ func (b *commandsBuilder) newCropCmd() *cropCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			width, _ := strconv.Atoi(args[0])
 			height, _ := strconv.Atoi(args[1])
-			filePath := args[2]
 
-			src, err := imaging.Open(filePath)
-			if err != nil {
-				log.Fatalf("No such file path: %v", filePath)
-				return err
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[2])
+			} else {
+				filePath = args[2:]
 			}
 
-			dst := imaging.CropCenter(src, width, height)
+			processing := func(filePath string) error {
+				src, err := imaging.Open(filePath)
+				if err != nil {
+					log.Fatalf("No such file path: %v", filePath)
+					return err
+				}
 
-			return saveFile(filePath, dst, cmd)
+				dst := imaging.CropCenter(src, width, height)
+
+				return saveFile(filePath, dst, cmd)
+			}
+
+			return saveMultiFile(processing, filePath)
 
 		},
 	}

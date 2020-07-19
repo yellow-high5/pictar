@@ -23,7 +23,14 @@ func (b *commandsBuilder) newFitCmd() *fitCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			width, _ := strconv.Atoi(args[0])
 			height, _ := strconv.Atoi(args[1])
-			filePath := args[2:]
+
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[2])
+			} else {
+				filePath = args[2:]
+			}
 
 			processing := func(filePath string) error {
 				src, err := imaging.Open(filePath)

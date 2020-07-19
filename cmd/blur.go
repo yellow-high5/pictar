@@ -22,7 +22,14 @@ func (b *commandsBuilder) newBlurCmd() *blurCmd {
 		Long:  "https://godoc.org/github.com/disintegration/imaging#Blur",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := args[0:]
+
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[0])
+			} else {
+				filePath = args[0:]
+			}
 
 			processing := func(filePath string) error {
 				src, err := imaging.Open(filePath)
@@ -43,7 +50,7 @@ func (b *commandsBuilder) newBlurCmd() *blurCmd {
 		},
 	}
 
-	cmd.Flags().Float64VarP(&cc.sigma, "sigma", "s", 0, "The value that determines contrast enhancement")
+	cmd.Flags().Float64Var(&cc.sigma, "sigma", 0, "The value that determines contrast enhancement")
 
 	cc.baseBuilderCmd = b.newBaseBuilderCmd(cmd)
 

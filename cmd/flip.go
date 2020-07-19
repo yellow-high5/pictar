@@ -21,7 +21,14 @@ func (b *commandsBuilder) newFlipCmd() *flipCmd {
 		Args:  cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			direction := args[0]
-			filePath := args[1:]
+
+			var filePath []string
+
+			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
+				filePath = dirwalk(args[1])
+			} else {
+				filePath = args[1:]
+			}
 
 			processing := func(filePath string) error {
 				src, err := imaging.Open(filePath)

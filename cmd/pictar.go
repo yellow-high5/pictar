@@ -23,9 +23,11 @@ func (b *commandsBuilder) newPictarCmd() *pictarCmd {
 		},
 	})
 
-	cc.cmd.PersistentFlags().StringP("config", "c", "config.yaml", "config file (default is $HOME/.cobra.yaml)")
+	cc.cmd.PersistentFlags().StringP("config", "c", "config.yaml", "config file")
 	cc.cmd.PersistentFlags().StringP("extention", "e", "png", "specifies the extension of the output file")
-	cc.cmd.PersistentFlags().StringP("filter", "f", "Gaussian", "specifies a resampling filter to be used for image resizing.")
+	cc.cmd.PersistentFlags().StringP("filter", "f", "Gaussian", "specifies a resampling filter to be used for image resizing")
+	cc.cmd.PersistentFlags().StringP("save", "s", ".", "file save destination path after image processing")
+	cc.cmd.PersistentFlags().BoolP("directory", "D", false, "Whether to process images as directories")
 
 	return cc
 }
