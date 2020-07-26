@@ -51,7 +51,13 @@ func saveFile(origin string, dst image.Image, cmd *cobra.Command) error {
 	savePath := cmd.Flags().Lookup("save").Value
 	extention := cmd.Flags().Lookup("extention").Value
 
-	err := imaging.Save(dst, fmt.Sprintf("%s/%s.%s", savePath, getFileNameWithoutExt(origin), extention))
+	var err error
+
+	if saveExt := getExt(savePath.String()); !(saveExt == "" || saveExt == ".") {
+		err = imaging.Save(dst, fmt.Sprintf("%s", savePath))
+	} else {
+		err = imaging.Save(dst, fmt.Sprintf("%s/%s.%s", savePath, getFileNameWithoutExt(origin), extention))
+	}
 
 	if err != nil {
 		log.Fatalf("Failed to save image: %v", err)
@@ -67,6 +73,10 @@ func saveMultiFile(fn func(filePath string) error, multiFilePath []string) error
 		fn(s)
 	}
 	return nil
+}
+
+func getExt(path string) string {
+	return filepath.Ext(path)
 }
 
 func getFileNameWithoutExt(path string) string {

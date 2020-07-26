@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"log"
 
 	"github.com/disintegration/imaging"
@@ -39,10 +40,11 @@ func (b *commandsBuilder) newFlipCmd() *flipCmd {
 
 				if direction == "horizon" {
 					src = imaging.FlipH(src)
-				}
-
-				if direction == "vertical" {
+				} else if direction == "vertical" {
 					src = imaging.FlipV(src)
+				} else {
+					log.Fatalf("Cannot available such a option")
+					return errors.New("Cannot available such a option")
 				}
 
 				dst := src
