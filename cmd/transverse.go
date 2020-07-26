@@ -5,6 +5,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/helper"
 )
 
 type transverseCmd struct {
@@ -24,7 +25,7 @@ func (b *commandsBuilder) newTransverseCmd() *transverseCmd {
 			var filePath []string
 
 			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
-				filePath = dirwalk(args[0])
+				filePath = helper.Dirwalk(args[0])
 			} else {
 				filePath = args[0:]
 			}
@@ -38,10 +39,10 @@ func (b *commandsBuilder) newTransverseCmd() *transverseCmd {
 
 				dst := imaging.Transverse(src)
 
-				return saveFile(filePath, dst, cmd)
+				return helper.SaveFile(filePath, dst, cmd)
 			}
 
-			return saveMultiFile(processing, filePath)
+			return helper.SaveMultiFile(processing, filePath)
 
 		},
 	}

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/server"
 )
 
 type serverCmd struct {
@@ -17,15 +17,7 @@ func (b *commandsBuilder) newServerCmd() *serverCmd {
 		Short: "Startup API server of pictar",
 		Long:  `Server provides an endpoint for processing images.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: rewrite server.boot()
-			r := gin.Default()
-			r.GET("/", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "pictar server startup!!",
-				})
-			})
-			r.Run()
-
+			server.Boot()
 			return nil
 		},
 	}

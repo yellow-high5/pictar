@@ -6,6 +6,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/helper"
 )
 
 type cropCmd struct {
@@ -27,7 +28,7 @@ func (b *commandsBuilder) newCropCmd() *cropCmd {
 			var filePath []string
 
 			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
-				filePath = dirwalk(args[2])
+				filePath = helper.Dirwalk(args[2])
 			} else {
 				filePath = args[2:]
 			}
@@ -41,10 +42,10 @@ func (b *commandsBuilder) newCropCmd() *cropCmd {
 
 				dst := imaging.CropCenter(src, width, height)
 
-				return saveFile(filePath, dst, cmd)
+				return helper.SaveFile(filePath, dst, cmd)
 			}
 
-			return saveMultiFile(processing, filePath)
+			return helper.SaveMultiFile(processing, filePath)
 
 		},
 	}

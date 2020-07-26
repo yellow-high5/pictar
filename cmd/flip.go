@@ -6,6 +6,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/helper"
 )
 
 type flipCmd struct {
@@ -26,7 +27,7 @@ func (b *commandsBuilder) newFlipCmd() *flipCmd {
 			var filePath []string
 
 			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
-				filePath = dirwalk(args[1])
+				filePath = helper.Dirwalk(args[1])
 			} else {
 				filePath = args[1:]
 			}
@@ -49,10 +50,10 @@ func (b *commandsBuilder) newFlipCmd() *flipCmd {
 
 				dst := src
 
-				return saveFile(filePath, dst, cmd)
+				return helper.SaveFile(filePath, dst, cmd)
 			}
 
-			return saveMultiFile(processing, filePath)
+			return helper.SaveMultiFile(processing, filePath)
 
 		},
 	}

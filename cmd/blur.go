@@ -5,6 +5,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/helper"
 )
 
 type blurCmd struct {
@@ -26,7 +27,7 @@ func (b *commandsBuilder) newBlurCmd() *blurCmd {
 			var filePath []string
 
 			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
-				filePath = dirwalk(args[0])
+				filePath = helper.Dirwalk(args[0])
 			} else {
 				filePath = args[0:]
 			}
@@ -42,10 +43,10 @@ func (b *commandsBuilder) newBlurCmd() *blurCmd {
 				log.Printf("sigma is %v", cc.sigma)
 				dst := imaging.Blur(src, cc.sigma)
 
-				return saveFile(filePath, dst, cmd)
+				return helper.SaveFile(filePath, dst, cmd)
 			}
 
-			return saveMultiFile(processing, filePath)
+			return helper.SaveMultiFile(processing, filePath)
 
 		},
 	}

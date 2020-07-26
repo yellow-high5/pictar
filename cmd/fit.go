@@ -6,6 +6,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cobra"
+	"github.com/yellow-high5/pictar/helper"
 )
 
 type fitCmd struct {
@@ -27,7 +28,7 @@ func (b *commandsBuilder) newFitCmd() *fitCmd {
 			var filePath []string
 
 			if b, err := cmd.Flags().GetBool("directory"); b && err == nil {
-				filePath = dirwalk(args[2])
+				filePath = helper.Dirwalk(args[2])
 			} else {
 				filePath = args[2:]
 			}
@@ -39,12 +40,12 @@ func (b *commandsBuilder) newFitCmd() *fitCmd {
 				}
 
 				// TODO: width and height should be alternative
-				dst := imaging.Thumbnail(src, width, height, getFilter(cmd.Flags().Lookup("filter").Value.String()))
+				dst := imaging.Thumbnail(src, width, height, helper.GetFilter(cmd.Flags().Lookup("filter").Value.String()))
 
-				return saveFile(filePath, dst, cmd)
+				return helper.SaveFile(filePath, dst, cmd)
 			}
 
-			return saveMultiFile(processing, filePath)
+			return helper.SaveMultiFile(processing, filePath)
 
 		},
 	}
