@@ -2,45 +2,40 @@ package server
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-	"path/filepath"
-	"strings"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yellow-high5/pictar/helper"
 )
 
 func Boot() {
 	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pictar server startup!!",
-		})
-	})
 
 	router.POST("/upload", func(c *gin.Context) {
 		file, err := c.FormFile("image")
 
 		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+			c.String(400, fmt.Sprintf("Cannot get form err: %s", err.Error()))
 			return
 		}
 
-		if !helper.Contains([]string{".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".tif"}, strings.ToLower(filepath.Ext(file.Filename))) {
-			c.String(http.StatusBadRequest, fmt.Sprint("cannot read as image file"))
+		const originName = "ORIGINAL.png" // TODO: Read config file
+
+		if err := c.SaveUploadedFile(file, originName); err != nil {
+			c.String(400, fmt.Sprintf("Cannot upload server filesystem err: %s", err.Error()))
 			return
 		}
+		defer os.Remove(originName)
 
-		log.Println(file.Filename)
-		filename := filepath.Base(file.Filename)
-		if err := c.SaveUploadedFile(file, filename); err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-			return
+		ProcessImage(originName)
+
+		if err := UploadS3(originName, time.Now().String()+".png"); err != nil {
+			c.String(400, fmt.Sprintf("Cannot upload S3 err: %s", err.Error()))
 		}
 
-		c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully.", file.Filename))
+		c.String(201, fmt.Sprintf("File %s uploaded successfully.", file.Filename))
 	})
+
 	router.Run()
 
 }
